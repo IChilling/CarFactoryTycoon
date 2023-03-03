@@ -245,7 +245,7 @@ function autoRefillFunc()
                     game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Drop:InvokeServer(v)
                     glass_count = glass_count + 1
                 end
-                wait(5)
+                wait(1)
             end
         end
     end)
