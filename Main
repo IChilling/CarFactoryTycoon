@@ -1,0 +1,321 @@
+--Car Factory Script/GUI
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Car Factory Tycoon", HidePremium = false, SaveConfig = false, ConfigFolder = "ChillingCarFactory", IntroEnabled = false})
+
+--SCRIPT CRUD
+local humanoidrootpart = game.Players.LocalPlayer.Character.HumanoidRootPart
+local player = game.Players.LocalPlayer
+local player_team = player.Team.Name
+local vu = game:GetService("VirtualUser")
+
+local conveyors
+local worker_count
+local car
+local metal_count
+local glass_count
+local name
+local prompt
+local oldcframebuy
+local cframebuy
+local pads
+local drops
+local oldcframeair
+
+--Remove shop GUI
+if game:GetService("Players")[player.Name].PlayerGui.HUD:FindFirstChild("Shop") then
+    game:GetService("Players")[player.Name].PlayerGui.HUD.Shop:Destroy()
+end
+
+--Get Conveyors Function
+local function getConveyors(conveyors)
+    conveyors = {}
+    for i, v in pairs(game:GetService("Workspace").Tycoons[player_team].Model.Lines:GetChildren()) do
+        if v.Name ~= "Exclusive" then
+            conveyors[#conveyors+1] = v
+        end
+    end
+    return conveyors
+end
+
+spawn(function()
+    while true do
+        conveyors = getConveyors(conveyors)
+        wait(10)
+    end
+end)
+
+--GUI CRUD
+getgenv().autoRefill = false
+getgenv().autoComplete = false
+getgenv().autoSell = false
+
+local Main = Window:MakeTab({
+	Name = "Main",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Section1 = Main:AddSection({
+	Name = "Creator: Chilling"
+})
+
+Main:AddToggle({
+	Name = "Auto Refill",
+	Default = false,
+	Callback = function(Value)
+		getgenv().autoRefill = Value
+		if Value then
+		    autoRefillFunc()
+		end
+	end
+})
+
+Main:AddToggle({
+	Name = "Auto Complete Vehicle",
+	Default = false,
+	Callback = function(Value)
+		getgenv().autoComplete = Value
+		if Value then
+		    autoCompleteFunc()
+		end
+	end
+})
+
+Main:AddToggle({
+	Name = "Auto Upgrade Vehicle",
+	Default = false,
+	Callback = function(Value)
+		getgenv().autoUpgrade = Value
+		if Value then
+		    autoUpgradeFunc()
+		end
+	end
+})
+
+Main:AddToggle({
+	Name = "Auto Sell",
+	Default = false,
+	Callback = function(Value)
+		getgenv().autoSell = Value
+		if Value then
+		    autoSellFunc()
+		end
+	end
+})
+
+Main:AddToggle({
+	Name = "Auto Buy Pads",
+	Default = false,
+	Callback = function(Value)
+		getgenv().autoBuy = Value
+		if Value then
+		    autoBuyFunc()
+		end
+	end
+})
+
+local Misc = Window:MakeTab({
+	Name = "Misc",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Section1 = Misc:AddSection({
+	Name = "Creator: Chilling"
+})
+
+Misc:AddToggle({
+	Name = "Auto Collect Air Drop",
+	Default = false,
+	Callback = function(Value)
+		getgenv().autoAirdrop = Value
+		if Value then
+		    autoAirdropFunc()
+		end
+	end
+})
+
+Misc:AddToggle({
+	Name = "Auto Rebirth",
+	Default = false,
+	Callback = function(Value)
+		getgenv().autoRebirth = Value
+		if Value then
+		    autoRebirthFunc()
+		end
+	end
+})
+
+Misc:AddToggle({
+	Name = "Anti AFK",
+	Default = false,
+	Callback = function(Value)
+		getgenv().antiAFK = Value
+		if Value then
+		    antiAFKFunc()
+		end
+	end
+})
+
+OrionLib:Init()
+
+--Main Toggle Functions
+function autoCompleteFunc()
+    spawn(function()
+        while getgenv().autoComplete do
+    
+            for i, v in pairs(conveyors) do
+                worker_count = 0
+                for i, v in pairs(v.Conveyors:GetChildren()) do
+                    if v:FindFirstChild("Worker") then
+                        worker_count = worker_count + 1
+                    end
+                end
+                
+                car = v.Car
+                if worker_count == 0 then
+                    --Purchase first worker
+                    game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.Upgrade:InvokeServer(v.Name, "Workers")
+                elseif worker_count == 1 then
+                    if car:FindFirstChild("Chassis") then
+                        game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
+                    end
+                elseif worker_count == 2 then
+                    if car:FindFirstChild("Chairs") then
+                        game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
+                    end
+                elseif worker_count == 3 then
+                    if car:FindFirstChild("Engine") then
+                        game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
+                    end
+                elseif worker_count == 4 then
+                    if car:FindFirstChild("Exterior") then
+                        game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
+                    end
+                elseif worker_count == 5 then
+                    if car:FindFirstChild("Windows") then
+                        game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
+                    end
+                elseif worker_count == 6 then
+                    print("No Skip Needed")
+                end
+            end
+            wait(1)
+        end
+    end)
+end
+
+function autoUpgradeFunc()
+    spawn(function()
+        while getgenv().autoUpgrade do
+            for i, v in pairs(conveyors) do
+                game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.BuyNextCar:InvokeServer(v.Name)
+                wait(5)
+            end
+        end
+    end)
+end
+
+function autoRefillFunc()
+    spawn(function()
+        while getgenv().autoRefill do
+            --Get Materials
+            for i, v in pairs(conveyors) do
+                metal_count = 0
+                glass_count = 0
+                for i, v in pairs(v.DropoffBox.Materials:GetChildren()) do
+                    name = v.Name
+                    name = name.sub(name, 0, -2)
+                    if name == "Metal" then
+                        metal_count = metal_count + 1
+                    end
+                    if name == "Glass" then
+                        glass_count = glass_count + 1
+                    end
+                end
+                --Fill Materials
+                if metal_count < 1 then
+                    game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Collect:InvokeServer("Metal")
+                    game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Drop:InvokeServer(v)
+                    metal_count = metal_count + 1
+                end
+                
+                if glass_count < 1 then
+                    game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Collect:InvokeServer("Glass")
+                    game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Drop:InvokeServer(v)
+                    glass_count = glass_count + 1
+                end
+                wait(5)
+            end
+        end
+    end)
+end
+
+function autoSellFunc()
+    spawn(function()
+        while getgenv().autoSell do
+            if game:GetService("Workspace").Tycoons[player_team].Model.NPCs:FindFirstChild("BidderPrompt") then
+                prompt = game:GetService("Workspace").Tycoons[player_team].Model.NPCs.BidderPrompt
+                game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.AcceptBid:InvokeServer(prompt, "1")
+            end
+            wait(1)
+        end
+    end)
+end
+
+function autoBuyFunc()
+    spawn(function()
+        while getgenv().autoBuy do
+            pads = game:GetService("Workspace").Tycoons[player_team].Model.Buttons:GetChildren()
+            oldcframebuy = humanoidrootpart.CFrame
+            for i, v in pairs(pads) do
+                if v.Name == "Restocker - Building 1" or v.Name == "Salesman - Building 1" or v.Name == "Restocker - Building 2" or v.Name == "Salesman - Building 2" then
+                    print("Gem Pad - Will Not Purchase")
+                else
+                    cframebuy = v.Base.CFrame + Vector3.new(0, 5, 0)
+                    humanoidrootpart.CFrame = cframebuy
+                end
+                wait(0.1)
+            end
+            humanoidrootpart.CFrame = oldcframebuy
+            wait(60)
+        end
+    end)
+end
+
+function autoAirdropFunc()
+    spawn(function()
+        while getgenv().autoAirdrop do
+            drops = game:GetService("Workspace").World.AirDrops.Drops
+            if drops:FindFirstChild("AirDrop") then
+                if not drops.AirDrop:FindFirstChild("Parachute") then
+                    oldcframeair = humanoidrootpart.CFrame
+                    humanoidrootpart.CFrame = game:GetService("Workspace").World.AirDrops.Drops.AirDrop.Base.CFrame
+                    wait(0.05)
+                    humanoidrootpart.CFrame = oldcframeair
+                end
+            end
+            wait(0.05)
+        end
+    end)
+end
+
+function autoRebirthFunc()
+    spawn(function()
+        while getgenv().autoRebirth do
+            game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.Rebirth:InvokeServer()
+            wait(5)
+        end
+    end)
+end
+
+function antiAFKFunc()
+    spawn(function()
+        while getgenv().antiAFK do
+            vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+	        wait(0.5)
+	        vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+	        wait(60)
+        end
+    end)
+end
