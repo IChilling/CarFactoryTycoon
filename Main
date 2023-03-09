@@ -1,8 +1,5 @@
 --Car Factory Script/GUI
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
-local Window = OrionLib:MakeWindow({Name = "Car Factory Tycoon", HidePremium = false, SaveConfig = false, ConfigFolder = "ChillingCarFactory", IntroEnabled = false})
-
---SCRIPT CRUD
+--Local Variables
 local humanoidrootpart = game.Players.LocalPlayer.Character.HumanoidRootPart
 local player = game.Players.LocalPlayer
 local player_team = player.Team.Name
@@ -18,14 +15,6 @@ local prompt
 local pads
 local drops
 
---Remove shop GUI
-if game:GetService("Players")[player.Name].PlayerGui.HUD:FindFirstChild("Shop") then
-    game:GetService("Players")[player.Name].PlayerGui.HUD.Shop:Destroy()
-end
-if game:GetService("Players")[player.Name].PlayerGui.HUD:FindFirstChild("Notification") then
-    game:GetService("Players")[player.Name].PlayerGui.HUD.Notification:Destroy()
-end
-
 --Get Conveyors Function
 local function getConveyors(conveyors)
     conveyors = {}
@@ -37,133 +26,19 @@ local function getConveyors(conveyors)
     return conveyors
 end
 
-spawn(function()
+function conveyorsFunc()
     while true do
         conveyors = getConveyors(conveyors)
-        wait(10)
+        wait(5)
     end
-end)
+end
 
---GUI CRUD
-getgenv().autoRefill = false
-getgenv().autoComplete = false
-getgenv().autoSell = false
-
-local Main = Window:MakeTab({
-	Name = "Main",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
-})
-
-local Section1 = Main:AddSection({
-	Name = "Creator: Chilling"
-})
-
-Main:AddToggle({
-	Name = "Auto Refill",
-	Default = false,
-	Callback = function(Value)
-		getgenv().autoRefill = Value
-		if Value then
-		    coroutine.wrap(autoRefillFunc)()
-		end
-	end
-})
-
-Main:AddToggle({
-	Name = "Auto Complete Vehicle",
-	Default = false,
-	Callback = function(Value)
-		getgenv().autoComplete = Value
-		if Value then
-		    coroutine.wrap(autoCompleteFunc)()
-		end
-	end
-})
-
-Main:AddToggle({
-	Name = "Auto Upgrade Vehicle",
-	Default = false,
-	Callback = function(Value)
-		getgenv().autoUpgrade = Value
-		if Value then
-		    coroutine.wrap(autoUpgradeFunc)()
-		end
-	end
-})
-
-Main:AddToggle({
-	Name = "Auto Sell",
-	Default = false,
-	Callback = function(Value)
-		getgenv().autoSell = Value
-		if Value then
-		    coroutine.wrap(autoSellFunc)()
-		end
-	end
-})
-
-Main:AddToggle({
-	Name = "Auto Buy Pads",
-	Default = false,
-	Callback = function(Value)
-		getgenv().autoBuy = Value
-		if Value then
-		    coroutine.wrap(autoBuyFunc)()
-		end
-	end
-})
-
-local Misc = Window:MakeTab({
-	Name = "Misc",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
-})
-
-local Section1 = Misc:AddSection({
-	Name = "Creator: Chilling"
-})
-
-Misc:AddToggle({
-	Name = "Auto Collect Air Drop",
-	Default = false,
-	Callback = function(Value)
-		getgenv().autoAirdrop = Value
-		if Value then
-		    coroutine.wrap(autoAirdropFunc)()
-		end
-	end
-})
-
-Misc:AddToggle({
-	Name = "Auto Rebirth",
-	Default = false,
-	Callback = function(Value)
-		getgenv().autoRebirth = Value
-		if Value then
-		    autoRebirthFunc()
-		end
-	end
-})
-
-Misc:AddToggle({
-	Name = "Anti AFK",
-	Default = false,
-	Callback = function(Value)
-		getgenv().antiAFK = Value
-		if Value then
-		    coroutine.wrap(antiAFKFunc)()
-		end
-	end
-})
-
-OrionLib:Init()
+conveyors = getConveyors(conveyors)
+coroutine.wrap(conveyorsFunc)()
 
 --Main Toggle Functions
 function autoCompleteFunc()
     while wait(0.25) do
-        if not getgenv().autoComplete then return end
-    
         for i, v in pairs(conveyors) do
             worker_count = 0
             for i, v in pairs(v.Conveyors:GetChildren()) do
@@ -200,71 +75,61 @@ function autoCompleteFunc()
                 print("No Skip Needed")
             end
         end
-        
-        if not getgenv().autoComplete then return end
     end
 end
 
 function autoUpgradeFunc()
     while wait(1) do
-        if not getgenv().autoUpgrade then return end
         for i, v in pairs(conveyors) do
             game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.BuyNextCar:InvokeServer(v.Name)
         end
-        if not getgenv().autoUpgrade then return end
     end
 end
 
 function autoRefillFunc()
     while wait(0.1) do
-        if not getgenv().autoRefill then return end
-            --Get Material Count
-            for i, v in pairs(conveyors) do
-                metal_count = 0
-                glass_count = 0
-                for i, v in pairs(v.DropoffBox.Materials:GetChildren()) do
-                    name = v.Name
-                    name = name.sub(name, 0, -2)
-                    if name == "Metal" then
-                        metal_count = metal_count + 1
-                    end
-                    if name == "Glass" then
-                        glass_count = glass_count + 1
-                    end
-                end
-                
-                --Fill Materials
-                if metal_count < 1 then
-                    game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Collect:InvokeServer("Metal")
-                    game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Drop:InvokeServer(v)
+        --Get Material Count
+        for i, v in pairs(conveyors) do
+            metal_count = 0
+            glass_count = 0
+            for i, v in pairs(v.DropoffBox.Materials:GetChildren()) do
+                name = v.Name
+                name = name.sub(name, 0, -2)
+                if name == "Metal" then
                     metal_count = metal_count + 1
                 end
-                
-                if glass_count < 1 then
-                    game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Collect:InvokeServer("Glass")
-                    game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Drop:InvokeServer(v)
+                if name == "Glass" then
                     glass_count = glass_count + 1
                 end
             end
-        if not getgenv().autoRefill then return end
+            
+            --Fill Materials
+            if metal_count < 1 then
+                game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Collect:InvokeServer("Metal")
+                game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Drop:InvokeServer(v)
+                metal_count = metal_count + 1
+            end
+            
+            if glass_count < 1 then
+                game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Collect:InvokeServer("Glass")
+                game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Drop:InvokeServer(v)
+                glass_count = glass_count + 1
+            end
+        end
     end
 end
 
 function autoSellFunc()
     while wait(1) do
-        if not getgenv().autoSell then return end
         if game:GetService("Workspace").Tycoons[player_team].Model.NPCs:FindFirstChild("BidderPrompt") then
             prompt = game:GetService("Workspace").Tycoons[player_team].Model.NPCs.BidderPrompt
             game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.AcceptBid:InvokeServer(prompt, "1")
         end
-        if not getgenv().autoSell then return end
     end
 end
 
 function autoBuyFunc()
     while wait(1) do
-        if not getgenv().autoBuy then return end
-        
         pads = game:GetService("Workspace").Tycoons[player_team].Model.Buttons:GetChildren()
         for i, v in pairs(pads) do
             if v.Name == "Restocker - Building 1" or v.Name == "Salesman - Building 1" or v.Name == "Restocker - Building 2" or v.Name == "Salesman - Building 2" then
@@ -275,8 +140,6 @@ function autoBuyFunc()
                 firetouchinterest(humanoidrootpart, v.Pad, 1)
             end
         end
-        
-        if not getgenv().autoBuy then return end
     end
 end
 
@@ -285,8 +148,6 @@ function autoAirdropFunc()
     local airdrops = game:GetService("Workspace").World.AirDrops
     
     while wait() do
-        if not getgenv().autoAirdrop then return end
-        
         if airdrops:FindFirstChild("Drops") then
             if airdrops.Drops:FindFirstChild("AirDrop") then
                 if not airdrops.Drops.AirDrop:FindFirstChild("Parachute") then
@@ -296,25 +157,180 @@ function autoAirdropFunc()
                 end
             end
         end
-        
-        if not getgenv().autoAirdrop then return end
     end
 end
 
 function autoRebirthFunc()
     while wait(5) do
-        if not getgenv().autoRebirth then return end
         game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.Rebirth:InvokeServer()
-        if not getgenv().autoRebirth then return end
     end
 end
 
 function antiAFKFunc()
     while wait(60) do
-        if not getgenv().antiAFK then return end
         vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
 	    wait(0.5)
 	    vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-	    if not getgenv().antiAFK then return end
     end
 end
+
+--Define variables
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Car Factory Tycoon", HidePremium = false, SaveConfig = false, ConfigFolder = "ChillingCarFactory", IntroEnabled = false})
+
+--SCRIPT CRUD
+
+local autoCompleteFuncC
+local autoRefillFuncC
+local autoUpgradeFuncC
+local autoSellFuncC
+local autoBuyFuncC
+local autoAirdropFuncC
+local autoRebirthFuncC
+local antiAFKFuncC
+
+--Remove shop GUI
+if game:GetService("Players")[player.Name].PlayerGui.HUD:FindFirstChild("Shop") then
+    game:GetService("Players")[player.Name].PlayerGui.HUD.Shop:Destroy()
+end
+if game:GetService("Players")[player.Name].PlayerGui.HUD:FindFirstChild("Notification") then
+    game:GetService("Players")[player.Name].PlayerGui.HUD.Notification:Destroy()
+end
+
+local firstExec = true
+
+--GUI CRUD
+local Main = Window:MakeTab({
+	Name = "Main",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Section1 = Main:AddSection({
+	Name = "Creator: Chilling"
+})
+
+Main:AddToggle({
+	Name = "Auto Refill",
+	Default = false,
+	Callback = function(Value)
+	    if firstExec then return end
+		if Value then
+		    autoRefillFuncC = coroutine.create(autoRefillFunc)
+		    success = coroutine.resume(autoRefillFuncC)
+		else
+		    coroutine.close(autoRefillFuncC)
+		end
+	end
+})
+
+Main:AddToggle({
+	Name = "Auto Complete Vehicle",
+	Default = false,
+	Callback = function(Value)
+	    if firstExec then return end
+		if Value then
+		    autoCompleteFuncC = coroutine.create(autoCompleteFunc)
+		    success = coroutine.resume(autoCompleteFuncC)
+		else
+		    coroutine.close(autoCompleteFuncC)
+		end
+	end
+})
+
+Main:AddToggle({
+	Name = "Auto Upgrade Vehicle",
+	Default = false,
+	Callback = function(Value)
+	    if firstExec then return end
+		if Value then
+		    autoUpgradeFuncC = coroutine.create(autoUpgradeFunc)
+		    success = coroutine.resume(autoUpgradeFuncC)
+		else
+		    coroutine.close(autoUpgradeFuncC)
+		end
+	end
+})
+
+Main:AddToggle({
+	Name = "Auto Sell",
+	Default = false,
+	Callback = function(Value)
+	    if firstExec then return end
+		if Value then
+		    autoSellFuncC = coroutine.create(autoSellFunc)
+		    success = coroutine.resume(autoSellFuncC)
+		else
+		    coroutine.yield(autoSellFuncC)
+		end
+	end
+})
+
+Main:AddToggle({
+	Name = "Auto Buy Pads",
+	Default = false,
+	Callback = function(Value)
+	    if firstExec then return end
+		if Value then
+		    autoBuyFuncC = coroutine.create(autoBuyFunc)
+		    success = coroutine.resume(autoBuyFuncC)
+		else
+		    coroutine.yield(autoBuyFuncC)
+		end
+	end
+})
+
+local Misc = Window:MakeTab({
+	Name = "Misc",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Section1 = Misc:AddSection({
+	Name = "Creator: Chilling"
+})
+
+Misc:AddToggle({
+	Name = "Auto Collect Air Drop",
+	Default = false,
+	Callback = function(Value)
+	    if firstExec then return end
+		if Value then
+		    autoAirdropFuncC = coroutine.create(autoAirdropFunc)
+		    success = coroutine.resume(autoAirdropFuncC)
+		else
+		    coroutine.yield(autoAirdropFuncC)
+		end
+	end
+})
+
+Misc:AddToggle({
+	Name = "Auto Rebirth",
+	Default = false,
+	Callback = function(Value)
+	    if firstExec then return end
+		if Value then
+		    autoRebirthFuncC = coroutine.create(autoRebirthFunc)
+		    success = coroutine.resume(autoRebirthFuncC)
+		else
+		    coroutine.yield(autoRebirthFuncC)
+		end
+	end
+})
+
+Misc:AddToggle({
+	Name = "Anti AFK",
+	Default = false,
+	Callback = function(Value)
+	    if firstExec then return end
+		if Value then
+		    antiAFKFuncC = coroutine.create(antiAFKFunc)
+		    success = coroutine.resume(antiAFKFuncC)
+		else
+		    coroutine.yield(antiAFKFuncC)
+		end
+	end
+})
+
+firstExec = false
+OrionLib:Init()
