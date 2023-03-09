@@ -15,15 +15,15 @@ local metal_count
 local glass_count
 local name
 local prompt
-local oldcframebuy
-local cframebuy
 local pads
 local drops
-local oldcframeair
 
 --Remove shop GUI
 if game:GetService("Players")[player.Name].PlayerGui.HUD:FindFirstChild("Shop") then
     game:GetService("Players")[player.Name].PlayerGui.HUD.Shop:Destroy()
+end
+if game:GetService("Players")[player.Name].PlayerGui.HUD:FindFirstChild("Notification") then
+    game:GetService("Players")[player.Name].PlayerGui.HUD.Notification:Destroy()
 end
 
 --Get Conveyors Function
@@ -65,7 +65,7 @@ Main:AddToggle({
 	Callback = function(Value)
 		getgenv().autoRefill = Value
 		if Value then
-		    autoRefillFunc()
+		    coroutine.wrap(autoRefillFunc)()
 		end
 	end
 })
@@ -76,7 +76,7 @@ Main:AddToggle({
 	Callback = function(Value)
 		getgenv().autoComplete = Value
 		if Value then
-		    autoCompleteFunc()
+		    coroutine.wrap(autoCompleteFunc)()
 		end
 	end
 })
@@ -87,7 +87,7 @@ Main:AddToggle({
 	Callback = function(Value)
 		getgenv().autoUpgrade = Value
 		if Value then
-		    autoUpgradeFunc()
+		    coroutine.wrap(autoUpgradeFunc)()
 		end
 	end
 })
@@ -98,7 +98,7 @@ Main:AddToggle({
 	Callback = function(Value)
 		getgenv().autoSell = Value
 		if Value then
-		    autoSellFunc()
+		    coroutine.wrap(autoSellFunc)()
 		end
 	end
 })
@@ -109,7 +109,7 @@ Main:AddToggle({
 	Callback = function(Value)
 		getgenv().autoBuy = Value
 		if Value then
-		    autoBuyFunc()
+		    coroutine.wrap(autoBuyFunc)()
 		end
 	end
 })
@@ -130,7 +130,7 @@ Misc:AddToggle({
 	Callback = function(Value)
 		getgenv().autoAirdrop = Value
 		if Value then
-		    autoAirdropFunc()
+		    coroutine.wrap(autoAirdropFunc)()
 		end
 	end
 })
@@ -152,7 +152,7 @@ Misc:AddToggle({
 	Callback = function(Value)
 		getgenv().antiAFK = Value
 		if Value then
-		    antiAFKFunc()
+		    coroutine.wrap(antiAFKFunc)()
 		end
 	end
 })
@@ -161,65 +161,64 @@ OrionLib:Init()
 
 --Main Toggle Functions
 function autoCompleteFunc()
-    spawn(function()
-        while getgenv().autoComplete do
+    while wait(0.25) do
+        if not getgenv().autoComplete then return end
     
-            for i, v in pairs(conveyors) do
-                worker_count = 0
-                for i, v in pairs(v.Conveyors:GetChildren()) do
-                    if v:FindFirstChild("Worker") then
-                        worker_count = worker_count + 1
-                    end
-                end
-                
-                car = v.Car
-                if worker_count == 0 then
-                    --Purchase first worker
-                    game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.Upgrade:InvokeServer(v.Name, "Workers")
-                elseif worker_count == 1 then
-                    if car:FindFirstChild("Chassis") then
-                        game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
-                    end
-                elseif worker_count == 2 then
-                    if car:FindFirstChild("Chairs") then
-                        game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
-                    end
-                elseif worker_count == 3 then
-                    if car:FindFirstChild("Engine") then
-                        game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
-                    end
-                elseif worker_count == 4 then
-                    if car:FindFirstChild("Exterior") then
-                        game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
-                    end
-                elseif worker_count == 5 then
-                    if car:FindFirstChild("Windows") then
-                        game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
-                    end
-                elseif worker_count == 6 then
-                    print("No Skip Needed")
+        for i, v in pairs(conveyors) do
+            worker_count = 0
+            for i, v in pairs(v.Conveyors:GetChildren()) do
+                if v:FindFirstChild("Worker") then
+                    worker_count = worker_count + 1
                 end
             end
-            wait(1)
+            
+            car = v.Car
+            if worker_count == 0 then
+                --Purchase first worker
+                game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.Upgrade:InvokeServer(v.Name, "Workers")
+            elseif worker_count == 1 then
+                if car:FindFirstChild("Chassis") then
+                    game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
+                end
+            elseif worker_count == 2 then
+                if car:FindFirstChild("Chairs") then
+                    game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
+                end
+            elseif worker_count == 3 then
+                if car:FindFirstChild("Engine") then
+                    game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
+                end
+            elseif worker_count == 4 then
+                if car:FindFirstChild("Exterior") then
+                    game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
+                end
+            elseif worker_count == 5 then
+                if car:FindFirstChild("Windows") then
+                    game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.SpawnCarSegment:InvokeServer(v.Name)
+                end
+            elseif worker_count == 6 then
+                print("No Skip Needed")
+            end
         end
-    end)
+        
+        if not getgenv().autoComplete then return end
+    end
 end
 
 function autoUpgradeFunc()
-    spawn(function()
-        while getgenv().autoUpgrade do
-            for i, v in pairs(conveyors) do
-                game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.BuyNextCar:InvokeServer(v.Name)
-                wait(5)
-            end
+    while wait(1) do
+        if not getgenv().autoUpgrade then return end
+        for i, v in pairs(conveyors) do
+            game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.BuyNextCar:InvokeServer(v.Name)
         end
-    end)
+        if not getgenv().autoUpgrade then return end
+    end
 end
 
 function autoRefillFunc()
-    spawn(function()
-        while getgenv().autoRefill do
-            --Get Materials
+    while wait(0.1) do
+        if not getgenv().autoRefill then return end
+            --Get Material Count
             for i, v in pairs(conveyors) do
                 metal_count = 0
                 glass_count = 0
@@ -233,6 +232,7 @@ function autoRefillFunc()
                         glass_count = glass_count + 1
                     end
                 end
+                
                 --Fill Materials
                 if metal_count < 1 then
                     game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Collect:InvokeServer("Metal")
@@ -245,77 +245,76 @@ function autoRefillFunc()
                     game.ReplicatedStorage.Packages.Knit.Services.MaterialService.RF.Drop:InvokeServer(v)
                     glass_count = glass_count + 1
                 end
-                wait(1)
             end
-        end
-    end)
+        if not getgenv().autoRefill then return end
+    end
 end
 
 function autoSellFunc()
-    spawn(function()
-        while getgenv().autoSell do
-            if game:GetService("Workspace").Tycoons[player_team].Model.NPCs:FindFirstChild("BidderPrompt") then
-                prompt = game:GetService("Workspace").Tycoons[player_team].Model.NPCs.BidderPrompt
-                game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.AcceptBid:InvokeServer(prompt, "1")
-            end
-            wait(1)
+    while wait(1) do
+        if not getgenv().autoSell then return end
+        if game:GetService("Workspace").Tycoons[player_team].Model.NPCs:FindFirstChild("BidderPrompt") then
+            prompt = game:GetService("Workspace").Tycoons[player_team].Model.NPCs.BidderPrompt
+            game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.AcceptBid:InvokeServer(prompt, "1")
         end
-    end)
+        if not getgenv().autoSell then return end
+    end
 end
 
 function autoBuyFunc()
-    spawn(function()
-        while getgenv().autoBuy do
-            pads = game:GetService("Workspace").Tycoons[player_team].Model.Buttons:GetChildren()
-            oldcframebuy = humanoidrootpart.CFrame
-            for i, v in pairs(pads) do
-                if v.Name == "Restocker - Building 1" or v.Name == "Salesman - Building 1" or v.Name == "Restocker - Building 2" or v.Name == "Salesman - Building 2" then
-                    print("Gem Pad - Will Not Purchase")
-                else
-                    cframebuy = v.Base.CFrame + Vector3.new(0, 5, 0)
-                    humanoidrootpart.CFrame = cframebuy
-                end
-                wait(0.1)
+    while wait(1) do
+        if not getgenv().autoBuy then return end
+        
+        pads = game:GetService("Workspace").Tycoons[player_team].Model.Buttons:GetChildren()
+        for i, v in pairs(pads) do
+            if v.Name == "Restocker - Building 1" or v.Name == "Salesman - Building 1" or v.Name == "Restocker - Building 2" or v.Name == "Salesman - Building 2" then
+                print("Gem Pad - Will Not Purchase")
+            else
+                firetouchinterest(humanoidrootpart, v.Pad, 0)
+                wait()
+                firetouchinterest(humanoidrootpart, v.Pad, 1)
             end
-            humanoidrootpart.CFrame = oldcframebuy
-            wait(60)
         end
-    end)
+        
+        if not getgenv().autoBuy then return end
+    end
 end
 
 function autoAirdropFunc()
-    spawn(function()
-        while getgenv().autoAirdrop do
-            drops = game:GetService("Workspace").World.AirDrops.Drops
-            if drops:FindFirstChild("AirDrop") then
-                if not drops.AirDrop:FindFirstChild("Parachute") then
-                    oldcframeair = humanoidrootpart.CFrame
-                    humanoidrootpart.CFrame = game:GetService("Workspace").World.AirDrops.Drops.AirDrop.Base.CFrame
-                    wait(0.05)
-                    humanoidrootpart.CFrame = oldcframeair
+    
+    local airdrops = game:GetService("Workspace").World.AirDrops
+    
+    while wait() do
+        if not getgenv().autoAirdrop then return end
+        
+        if airdrops:FindFirstChild("Drops") then
+            if airdrops.Drops:FindFirstChild("AirDrop") then
+                if not airdrops.Drops.AirDrop:FindFirstChild("Parachute") then
+                    firetouchinterest(humanoidrootpart, airdrops.Drops.AirDrop.Base, 0)
+                    wait()
+                    firetouchinterest(humanoidrootpart, airdrops.Drops.AirDrop.Base, 1)
                 end
             end
-            wait(0.05)
         end
-    end)
+        
+        if not getgenv().autoAirdrop then return end
+    end
 end
 
 function autoRebirthFunc()
-    spawn(function()
-        while getgenv().autoRebirth do
-            game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.Rebirth:InvokeServer()
-            wait(5)
-        end
-    end)
+    while wait(5) do
+        if not getgenv().autoRebirth then return end
+        game.ReplicatedStorage.Packages.Knit.Services.TycoonService.RF.Rebirth:InvokeServer()
+        if not getgenv().autoRebirth then return end
+    end
 end
 
 function antiAFKFunc()
-    spawn(function()
-        while getgenv().antiAFK do
-            vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-	        wait(0.5)
-	        vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-	        wait(60)
-        end
-    end)
+    while wait(60) do
+        if not getgenv().antiAFK then return end
+        vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+	    wait(0.5)
+	    vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+	    if not getgenv().antiAFK then return end
+    end
 end
